@@ -1,0 +1,7 @@
+[
+	{{#if blob}}
+		{{#each blob}}
+			{ "length" : "{{length}}", "width" : "{{width}}", "height" : "{{height}}", "cake" : { "name" : "{{cake.name}}", "recipe" : "{{cake.recipe}}"},"id" : "{{id}}"}{{#unless @last}},{{/unless}}
+		{{/each}}
+	{{/if}}
+]

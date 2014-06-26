@@ -1,0 +1,6 @@
+var jjv = require('jjv');
+var env = jjv();
+
+env.addSchema('{{templateName}}', {{{model.modelString}}});
+
+module.exports = env;

@@ -1,0 +1,4 @@
+module.exports = function Models() {
+{{#each nameArray}}this.{{this}} = require('./{{this}}');
+{{/each}}
+}

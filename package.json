@@ -1,0 +1,18 @@
+{
+  "name": "API_generator",
+  "description": "This is the initial version of the API generator.",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.4.6",
+    "mongodb": "*",
+    "validator": "~2.0.0",
+    "mongoose": "~3.8.8",
+    "handlebars": "~2.0.0-alpha.2",
+    "jjv": "~1.0.0",
+    "z-schema" : "2.4.7",
+    "jayschema" : "0.2.7",
+    "async": "~0.7.0",
+    "raml-parser": "*"
+  }
+}

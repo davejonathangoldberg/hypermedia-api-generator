@@ -1,0 +1,4 @@
+module.exports = function Templates() {
+{{#each nameArray}}this.{{this}} = require('./{{this}}.js');
+{{/each}}
+}

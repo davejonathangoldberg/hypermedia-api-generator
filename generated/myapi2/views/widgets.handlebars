@@ -1,0 +1,6 @@
+[
+	{{#each widgets}}
+		{{#unless @last}}{"color" : "{{color}}", "speed" : "{{speed}}", "size" : "{{size}}", } ,{{/unless}}
+		{{#if @last}}{{"color" : "{{color}}", "speed" : "{{speed}}", "size" : "{{size}}", } ,{{/if}}
+	{{/each}}
+]

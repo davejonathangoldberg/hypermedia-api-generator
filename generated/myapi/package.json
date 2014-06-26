@@ -1,0 +1,15 @@
+{
+  "name": "Reference_API",
+  "description": "This is a reference API for the API generator application",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "*",
+    "mongodb": "*",
+    "validator": "*",
+    "mongoose": "*",
+    "handlebars": "*",
+    "jjv": "*",
+    "async": "*"
+  }
+}

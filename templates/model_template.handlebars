@@ -1,0 +1,17 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema,
+ObjectId = Schema.ObjectId;
+
+var {{model.title}}Schema = new mongoose.Schema({
+      id: { type: String, unique: true, required: true},
+      {{#each model.properties}}{{@key}}: { type: {{CapitalizeFirstLetter type}}, required: true},
+      {{/each}}{{model.title}}_: [{type: String, required: true}],
+      {{#each parentResources}}{{this}}_: [ { type : String, unique : true, required : false } ],
+      {{/each}}createdDate: { type: Date, required: true},
+      modifiedDate: { type: Date, required: true}
+}, { collection : '{{model.title}}'});
+
+{{titleName}} = mongoose.model('{{titleName}}', {{model.title}}Schema);
+// the above is necessary as you might have embedded schemas which you don't export
+
+module.exports = {{titleName}};

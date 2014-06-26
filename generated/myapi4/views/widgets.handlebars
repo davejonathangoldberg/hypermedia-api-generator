@@ -1,0 +1,7 @@
+[
+	{{#if widgets}}
+		{{#each widgets}}
+			{ "color" : "{{color}}", "speed" : "{{speed}}", "size" : "{{size}}", "id" : "{{id}}"}{{#unless @last}},{{/unless}}
+		{{/each}}
+	{{/if}}
+]

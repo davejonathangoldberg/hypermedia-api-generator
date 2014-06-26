@@ -1,0 +1,7 @@
+[
+	{{#if posts}}
+		{{#each posts}}
+			{ "title" : "{{title}}", "content" : "{{content}}", "author" : "{{author}}", "id" : "{{id}}"}{{#unless @last}},{{/unless}}
+		{{/each}}
+	{{/if}}
+]

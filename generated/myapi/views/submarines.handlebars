@@ -1,0 +1,6 @@
+[
+	{{#each submarines}}
+		{{#unless @last}}{"length" : "{{length}}", "width" : "{{width}}", "height" : "{{height}}", } ,{{/unless}}
+		{{#if @last}}{{"length" : "{{length}}", "width" : "{{width}}", "height" : "{{height}}", } ,{{/if}}
+	{{/each}}
+]

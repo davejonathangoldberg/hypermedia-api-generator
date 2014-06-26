@@ -1,0 +1,5 @@
+var meta = {};
+{{#each this}}
+meta['{{@key}}'] = {'childResources' : [{{#each childResources}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}], 'parentResources' : [{{#each parentResources}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}]};{{/each}}
+
+module.exports = meta;
