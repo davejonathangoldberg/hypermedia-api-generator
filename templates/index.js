@@ -25,7 +25,7 @@ var resourcesSchema = {
     },
     "definitions" : {
         "resource" : {
-            "required"   : ["isCollection"],
+            "required"   : ["name"],
             "properties" : {
                 "name"              : { "type" : "string" },
                 "model"             : { "type" : "string" },

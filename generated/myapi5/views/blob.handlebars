@@ -1,0 +1,45 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" }
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{path}}{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "blob", "href": "http://example.com/docs/rels/blob", "templated": false }],
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"blob" : [
+			{{#each blob}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					"},"length" : "{{length}}",
+"width" : "{{width}}",
+"height" : "{{height}}",
+"cake" : 				{
+"name" : "{{cake.name}}",
+"recipe" : "{{cake.recipe}}"
+},
+"id" : "{{id}}"
+				}
+{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+				{
+"length" : "{{blob.length}}",
+"width" : "{{blob.width}}",
+"height" : "{{blob.height}}",
+"cake" : 				{
+"name" : "{{blob.cake.name}}",
+"recipe" : "{{blob.cake.recipe}}"
+},
+"id" : "{{blob.id}}"
+				}
+	{{/if}}
+}

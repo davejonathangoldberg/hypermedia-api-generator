@@ -1,0 +1,31 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" }
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{path}}{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "tags", "href": "http://example.com/docs/rels/tags", "templated": false }],
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"tags" : [
+			{{#each tags}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					"},"id" : "{{id}}"
+				}
+{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+				{
+"id" : "{{tags.id}}"
+				}
+	{{/if}}
+}

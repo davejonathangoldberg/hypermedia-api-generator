@@ -1,0 +1,34 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{path}}{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "submarines", "href": "http://example.com/docs/rels/submarines", "templated": false }]{{#if collection}},{{/if}}
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"submarines" : [
+			{{#each submarines}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					"},"length" : "{{length}}",
+"width" : "{{width}}",
+"height" : "{{height}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"length" : "{{submarines.length}}",
+"width" : "{{submarines.width}}",
+"height" : "{{submarines.height}}",
+"id" : "{{submarines.id}}"
+	{{/if}}
+}

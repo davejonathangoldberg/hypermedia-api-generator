@@ -8,6 +8,8 @@ module.exports = function {{titleLineage}}Routes(app) {
   var resourceName = '{{name}}';
   var parentResourceName = '{{parentResource}}';
   var resourcesLength = {{resourcesLength}};
+  var lineage = '{{lineage}}';
+  var lineageArray = [{{#each lineageArray}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}];
   
   // ROUTE FUNCTIONS
   
@@ -41,8 +43,13 @@ module.exports = function {{titleLineage}}Routes(app) {
       var resourcePath = req.params[resourceName + 'InstanceId'];
     }
     var parentInstanceId = req.params[parentResourceName + 'InstanceId'];
-    query['id'] = req.params[resourceName + 'InstanceId'];
-    query[resourceName + '_'] = resourcePath;
+    if(parentPath == ''){
+      query['id'] = req.params[resourceName + 'InstanceId'];
+      query[resourceName + '_'] = {$not : {$size : 0}};
+    } else {
+      query['id'] = req.params[resourceName + 'InstanceId'];
+      query[resourceName + '_'] = resourcePath;
+    }
     return composer.retrieveInstance(req, res, query, queryOptions, resourceName);
   });
   
@@ -50,15 +57,21 @@ module.exports = function {{titleLineage}}Routes(app) {
     var parentPath = '';
     var query = {};
     var queryOptions = {};
-    req.params[resourceName + 'InstanceId'] = resourceName;
+    var instancesArray = [];
     if (parentResourceName !== ''){
       for(var i=0; i < resourcesLength-1; i++){
         if(i == 0){
           parentPath = (resourcesLength > 2) ? req.params['resource' + i + 'InstanceId'] : req.params[parentResourceName + 'InstanceId'];
+          if(resourcesLength > 2){
+            instancesArray.push(req.params['resource' + i + 'InstanceId']);
+          } else {
+            instancesArray.push(req.params[parentResourceName + 'InstanceId']);
+          }
         } else if (i == resourcesLength - 2) {
           parentPath = parentPath + '|' + req.params[parentResourceName + 'InstanceId'];
         } else {
           parentPath = parentPath + '|' + req.params[resource + i + 'InstanceId'];
+          instancesArray.push(req.params[resource + i + 'InstanceId']);
         }
       }
     }
@@ -69,7 +82,7 @@ module.exports = function {{titleLineage}}Routes(app) {
       var resourcePath = req.params[resourceName + 'InstanceId'];
     }
     var options = { "upsert" : true };
-    return composer.updateChildInstance(req, res, next, resourceName, resourcePath, parentResourceName, parentPath, options);
+    return composer.updateChildInstance(req, res, next, resourceName, resourcePath, parentResourceName, parentPath, options, instancesArray, lineageArray);
   });
   
   app.del('{{instancePath}}', function(req, res, next){ // ONLY USED IN CASES WHERE THE SUB-INSTANCE IS PART OF A SEPARATE PARENT INSTANCE
