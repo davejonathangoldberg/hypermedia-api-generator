@@ -1,6 +1,0 @@
-[
-	{{#each posts}}
-		{{#unless @last}}{"title" : "{{title}}", "content" : "{{content}}", "author" : "{{author}}", } ,{{/unless}}
-		{{#if @last}}{{"title" : "{{title}}", "content" : "{{content}}", "author" : "{{author}}", } ,{{/if}}
-	{{/each}}
-]
