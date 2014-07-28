@@ -117,11 +117,10 @@ module.exports = function Utility(app) {
       printResource.mediaType = 'hal';
     }
     printResource[data.resourceName] = printResource.collection ? data.collection : data.instance;
-    if (data.resourceName !== 'root') printResource.parent = data.parent;
-    if (data.resourceName !== 'root') printResource.path = data.path;
+    printResource.parent = data.parent;
+    printResource.path = data.path;
     printResource.statusCode = data.statusCode;
     printResource.headerObject = data.headerObject;
-    printResource.resourceName = data.resourceName;
     console.log('data.parent: ' + JSON.stringify(data.parent) + '\n');
     console.log('printResource: ' + JSON.stringify(printResource) + '\n');
     callback(null, printResource);

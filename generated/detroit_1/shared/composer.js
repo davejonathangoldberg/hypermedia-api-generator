@@ -18,31 +18,6 @@ module.exports = function Composer(app) {
   var utility = new Utility(app);
   var recurser = new Recurser(app);
   
-  // RETRIEVE ROOT
-  this.retrieveRoot = function(req, res){ 
-    async.waterfall(
-      [
-        function(callback){ // STAGES THE RESULTS INCLUDING HYPERMEDIA FOR THE RESPONSE
-          var results = {};
-          results.parent = req.path.split('/');
-          results.path = req.path;
-          results.resourceName = 'root';
-          results.resourceType = 'instance';
-          results.req = req;
-          return utility.hypermediaStage(results, callback);
-        }
-      ],
-      function(err, results){
-        if (err) {
-          console.error(err);
-          return utility.returnServerError(res); // RETURNS 500 ERROR 
-        } else {          
-          console.log('results root: ' + JSON.stringify(results));
-          return utility.renderTemplate(res, results, results.resourceName,  200, {});
-        }
-      });
-  }
-  
   
   // RETRIEVE COLLECTION
   this.retrieveCollection = function(req, res, next, query, resourceName, resourcePath, parentResourceName, parentPath){

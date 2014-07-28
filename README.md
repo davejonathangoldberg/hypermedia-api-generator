@@ -18,7 +18,7 @@ The Hypermedia API generator is an API written in Node JS that lets you go from 
 There are a number of key goals for this project. They fall into the following cateogries:
  - Provide foundational ability to create *real* applications without code
  - Make building a functional application as easy, flexible and powerful as using a spreadsheet
- - Demonstrate applicability and usefulness of the 'optional' REST constraint: Code-On-Demand
+ - Demonstrate applicability and usefulness of the optional REST constraint: Code-On-Demand
  - Enable ad hoc capabilities for emergent devices and networks (IoT)
  - Create useful clients that can be applied to any API given a known media-type and a set of 'knowable' semantic profiles 
  - Creat a powerful toolset that will be used as a building block of robust, distributed applications.
@@ -41,10 +41,10 @@ Requirements
 Installation
 ---
 
-1. Make sure you have Node JS and MongoDB installed, and that mongod is running (this supports the generated APIs).
-2. '$ npm install'
-3. '$ node server'
-4. The API should now be running on localhost port 5000
+ 1. Make sure you have Node JS and MongoDB installed, and that mongod is running (this supports the generated APIs).
+ 2. '$ npm install'
+ 3. '$ node server'
+ 4. The API should now be running on localhost port 5000
 
 
 Steps to generate an API
@@ -59,8 +59,6 @@ Once you have installed the Hypermedia API generator and it is running (see inst
 5. Open a new terminal window and navigate to the directory where the new API was created.
 6. '$ node server' (must make sure mongod is running)
 7. That's it! Your new API is now up and running.
-
-
 
 JSON API Definition
 ---

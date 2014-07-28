@@ -2,13 +2,14 @@
 var App = require('./App.js');
 var Database = require('./Database.js');
 var dbConfig = require('./dbconfig.json');
-var Composer = require('./shared/composer.js');
-{{#each resources}}var {{this.titleLineage}}Routes = require('./routes/{{this.lineage}}');
-{{/each}}
+var AttendeesRoutes = require('./routes/attendees');
+var AttendeesTopicsRoutes = require('./routes/attendeestopics');
+var TopicsRoutes = require('./routes/topics');
+var TopicsAttendeesRoutes = require('./routes/topicsattendees');
+
 
 var app = new App();
 var database = new Database(dbConfig);
-var composer = new Composer();
 //var routes = new Routes(app, database);
 
 app.all('*', function(req, res, next){
@@ -39,12 +40,11 @@ app.post('*', function(req, res, next){
   return next();
 });
 
-app.get('/', function(req, res, next){      
-  return composer.retrieveRoot(req, res);
-});
+var attendeesRoutes = new AttendeesRoutes(app);
+var attendeesTopicsRoutes = new AttendeesTopicsRoutes(app);
+var topicsRoutes = new TopicsRoutes(app);
+var topicsAttendeesRoutes = new TopicsAttendeesRoutes(app);
 
-{{#each resources}}var {{this.altTitleLineage}}Routes = new {{this.titleLineage}}Routes(app);
-{{/each}}
 
 app.all('*', function(req, res){
   var errorMessage = "Invalid or Unsupported Request. Please check your input and try again.";

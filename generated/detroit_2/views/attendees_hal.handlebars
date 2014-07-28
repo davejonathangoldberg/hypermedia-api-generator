@@ -1,0 +1,35 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "attendees", "href": "http://example.com/docs/rels/attendees", "templated": false }]{{#if collection}},{{/if}}
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"attendees" : [
+			{{#each attendees}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"name" : "{{name}}",
+"apiExperience" : "{{apiExperience}}",
+"employer" : "{{employer}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"name" : "{{attendees.name}}",
+"apiExperience" : "{{attendees.apiExperience}}",
+"employer" : "{{attendees.employer}}",
+"id" : "{{attendees.id}}"
+	{{/if}}
+}
