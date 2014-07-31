@@ -1,0 +1,33 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "friends", "href": "http://example.com/docs/rels/friends", "templated": false }]{{#if collection}},{{/if}}
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"friends" : [
+			{{#each friends}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"firstName" : "{{firstName}}",
+"lastName" : "{{lastName}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"firstName" : "{{friends.firstName}}",
+"lastName" : "{{friends.lastName}}",
+"id" : "{{friends.id}}"
+	{{/if}}
+}

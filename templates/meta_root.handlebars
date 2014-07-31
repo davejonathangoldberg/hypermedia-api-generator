@@ -1,5 +1,5 @@
 var meta = {};
-meta['root'] = {'childResources' : [ {{#each resourceObjects}}'{{@key}}'{{#unless @last}},{{/unless}}{{/each}} ]};{{#each resourceObjects}}
+{{#each resourceObjects}}
 meta['{{@key}}'] = {'childResources' : [{{#each childResources}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}], 'parentResources' : [{{#each parentResources}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}]};{{/each}}
 meta['validRoutes'] = [{{#each lineageArray}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}}];
 module.exports = meta;

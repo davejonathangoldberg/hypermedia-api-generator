@@ -1,0 +1,39 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "employers", "href": "http://example.com/docs/rels/employers", "templated": false }]{{#if collection}},{{/if}}
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"employers" : [
+			{{#each employers}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"employerName" : "{{employerName}}",
+"location" : "{{location}}",
+"title" : "{{title}}",
+"startYear" : "{{startYear}}",
+"endYear" : "{{endYear}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"employerName" : "{{employers.employerName}}",
+"location" : "{{employers.location}}",
+"title" : "{{employers.title}}",
+"startYear" : "{{employers.startYear}}",
+"endYear" : "{{employers.endYear}}",
+"id" : "{{employers.id}}"
+	{{/if}}
+}
