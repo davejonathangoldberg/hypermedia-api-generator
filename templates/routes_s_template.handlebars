@@ -82,7 +82,7 @@ module.exports = function {{titleLineage}}Routes(app) {
       var resourcePath = req.params[resourceName + 'InstanceId'];
     }
     var options = { "upsert" : true };
-    return composer.updateChildInstance(req, res, next, resourceName, resourcePath, parentResourceName, parentPath, options, instancesArray, lineageArray);
+    return composer.updateStubInstance(req, res, next, resourceName, resourcePath, parentResourceName, parentPath, options, instancesArray, lineageArray);
   });
   
   app.del('{{instancePath}}', function(req, res, next){ // ONLY USED IN CASES WHERE THE SUB-INSTANCE IS PART OF A SEPARATE PARENT INSTANCE

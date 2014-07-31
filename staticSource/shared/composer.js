@@ -569,6 +569,236 @@ module.exports = function Composer(app) {
       });
   }
   
+  // UPDATE STUB INSTANCE
+  this.updateStubInstance = function(req, res, next, resourceName, resourcePath, parentResourceName, parentPath, options, instancesArray, lineageArray){    
+    options.upsert = options.upsert || false;
+    async.waterfall(
+      [
+        function(callback){
+          req.body.id = resourceName;
+          var data = {};
+          data.body = req.body;
+          data.resourceName = resourceName;
+          utility.validateInputData(data, callback);
+        },
+        function(results, callback){ // ANSWERS - DOES THE PARENT PATH EXIST? CHECKS THE WHOLE PARENT PATH INSTEAD OF JUST THE DIRECT PARENT.
+          if(results.validated && parentPath !== ''){
+            var data = {};
+            data.model = models[parentResourceName];
+            data.query = {};
+            data.query[parentResourceName + '_'] = parentPath;
+            coredb.findOneRecord(data, callback);
+          } else if (results.validated) {
+            callback(null,{"instance" : true});
+          } else {
+            return next();
+          }
+        },
+        function(results, callback){ // IF THE PARENT PATH EXISTS, DOES THE SPECIFIED CHILD RESOURCE EXIST?
+          if(results.instance){
+            var data = {};
+            data.model = models[resourceName];
+            data.query = {};
+            data.query['id'] = resourceName;
+            console.log('data: ' + JSON.stringify(data) + '\n');
+            console.log('resourceName: ' + resourceName + '\n');
+            coredb.findOneRecord(data, callback);
+          } else {
+            return utility.returnNotFound(res); // RETURNS 404 IF THE PARENT PATH DOESN'T EXIST FROM PREVIOUS FUNCTION BLOCK.
+          }
+        },
+        function(results, callback){ // UPDATES EXISTING RESOURCE, OR IF OPTION UPSERT IS SET TO TRUE, INSERTS NEW RESOURCE WITH A NEW PARENT RESOURCES STRING.
+          var data = {}
+          data.model = models[resourceName];
+          data.resource = results;
+          data.query = {};
+          data.options = options;
+          console.log('results: ' + JSON.stringify(results) + '\n');
+          var parentArray = ((parentPath !== '') && results.instance) ? results.instance[parentResourceName + '_'] : [];
+          if(results.instance && data.options.upsert && (parentArray.indexOf(parentPath) === -1 ) && (parentPath !== '')) { // IF THE CHILD RESOURCE EXISTS BUT NOT UNDER PARENT PATH, INSERT IT .
+            var pushQuery = {};
+            if(parentPath !== ''){
+              pushQuery[parentResourceName + '_'] = parentPath;
+            }
+            pushQuery[resourceName + '_'] = resourcePath;
+            data.statusCode = 200;
+            data.headerObject = {};
+            data.query['id'] = resourceName;
+            data.updateQuery = {};
+            req.body.modifiedDate = new Date();
+            data.updateQuery['$set'] = req.body; // CORE RESOURCE INFORMATON TO UPDATE OR INSERT
+            data.updateQuery['$push'] = pushQuery; // ADD THE PARENT RESOURCE PATH TO THE PARENT PATH ARRAY.
+            coredb.findAndUpdateRecords(data, callback); // UPDATE THE CHILD RESOURCE AND APPEND TO THE PARENT PATH
+          } else if(results.instance) { // RESOURCE EXISTS UNDER THE PARENT PATH
+            console.log('just results.instance');
+            data.statusCode = 200;
+            data.headerObject = {};
+            data.query['id'] = resourceName;
+            data.updateQuery = {};
+            req.body.modifiedDate = new Date();
+            data.updateQuery['$set'] = req.body; // CORE RESOURCE INFORMATON TO UPDATE
+            coredb.findAndUpdateRecords(data, callback); // UPDATE THE CHILD RESOURCE
+          } else if(data.options.upsert){ // IF THE CHILD RESOURCE DOESN'T EXIST, BUT UPSERT == TRUE, THEN INSERT IT
+            
+            /*
+             *  START EXPERIMENTATION FOR PERMUTATIONS NOW
+             */
+            
+            var instanceMap = {};
+            var data = {};
+            data.options = {};
+            data.statusCode = 201;
+            data.options.upsert = true;
+            req.body.modifiedDate = new Date();
+            req.body.id = resourceName;
+            data.query = {};
+            data.body = req.body;
+            
+            // MAPS IDS FOR CURRENT REQUEST TO ROUTES FOR LOOKING UP.
+            var instanceRoutes = meta['validRoutes'];
+            instancesArray.push(req.body.id); 
+            console.log('PUT instancesArray: ' + instancesArray);
+            for(i=0; i<lineageArray.length; i++){
+              for(j=0; j<meta['validRoutes'].length; j++){
+                instanceRoutes[j] = meta['validRoutes'][j].replace(lineageArray[i], instancesArray[i]);
+              }
+              instanceMap[instancesArray[i]] = lineageArray[i];
+            };
+            
+            // FOR EACH RESOURCE GET ALL POTENTIAL ROUTES AND FILTER. ADD NEW RESOURCE ENTRY AND UPDATE RELATED ENTRIES. 
+            console.log('data.options: ' + JSON.stringify(data.options) + '\n');
+            async.each(instancesArray, function( resource, callback ) {
+              console.log('data.options in each: ' + JSON.stringify(data.options) + '\n');
+              console.log('resource: ' + resource);
+              var currentResourceName = instanceMap[resource];
+              data.model = models[currentResourceName];
+              data.query['id'] = resource;
+              var reducedInstancesArray = instancesArray;
+              var activeResourceIndex = reducedInstancesArray.indexOf(resource);
+              var potentialRoutes = Combinatorics.permutationCombination(reducedInstancesArray);
+              var filteredRoutes = potentialRoutes.filter(function(a){
+                if(resource != req.body.id){
+                  return ((a.indexOf(req.body.id) > -1) && !(a.indexOf(resource) > -1));
+                } else {
+                  return ((a.indexOf(req.body.id) > -1) &&  (a.indexOf(req.body.id) == (a.length - 1))) ;
+                }
+              });
+              /*
+               *
+               *  THE FOLLOWING EXECUTES THIS LOGIC:
+               *    1. IF THE RESOURCE IS NOT THE 'NEW' RESOURCE
+               *      1A. ITERATE THROUGH ARRAY OF RESOURCE PATH ARRAYS
+               *      1B. JOIN ARRAY WITH PIPE AND ADD IT TO THE PARENT RESOURCE ARRAY FOR THE DB RECORD
+               *      1C. PUSH THE RESOURCE TO THE END OF THE RESOURCE PATH ARRAY
+               *      1D. JOIN ARRAY WITH PIPE AND ADD IT TO THE RESOURCE ARRAY FOR THE DB RECORD
+               *    2. IF THE RESOURCE IS THE NEW RESOURCE
+               *      2A. ITERATE THROUGH THE ARRAY OF RESOURCE PATH ARRAYS
+               *      2B. IF THE ARRAY > LENGTH 1, JOIN ARRAY WITH PIPE AND ADD IT TO THE RESOURCE ARRAY FOR THE DB RECORD
+               *        2C. REMOVE LAST ELEMENT OF ARRAY
+               *        2D. JOIN AND ADD TO PARENT RESOURCE ARRAY FOR THE DB RECORD
+               *      2E. IF THE ARRAY LENGTH = 1, ADD IT TO THE RESOURCE ARRAY FOR THE DB RECORD
+               *
+               */
+              
+              if(resource != req.body.id){
+                var newParentPathsArray = [];  // ARRAY THAT HOLDS PARENT PATHS TO APPEND TO EXISTING RESOURCES
+                var newResourcePathsArray = []; // ARRAY THAT HOLDS RESOURCE PATHS TO APPEND TO EXISTING RESOURCES
+                for(i=0; i<filteredRoutes.length; i++){
+                  filteredRoutes[i].push(resource);
+                  var joinedRoute = filteredRoutes[i].join('|');
+                  var checkRoute = filteredRoutes[i].join('');
+                  if(instanceRoutes.indexOf(checkRoute) > -1){ // WHERE THE MAGIC HAPPENS. IF TRUE, THEN STAGE TO LOAD NEW RECORD INTO THESE RESOURCES. 
+                    newParentPathsArray.push(joinedRoute);
+                    filteredRoutes[i].pop();
+                    var joinedParentRoute = filteredRoutes[i].join('|');
+                    newResourcePathsArray.push(joinedParentRoute);
+                  }
+                }
+                var pushQuery = {};
+                pushQuery[parentResourceName + '_'] = { '$each' : newParentPathsArray };
+                pushQuery[resourceName + '_'] = { '$each' : newResourcePathsArray };
+                data.updateQuery = {};
+                data.updateQuery['$push'] = pushQuery; // ADD THE PARENT RESOURCE PATH TO THE PARENT PATH ARRAY.
+                data.updateQuery['$set'] = { "modifiedDate" : req.body.modifiedDate };
+                coredb.findAndUpdateRecords(data, callback); // UPDATE THE CHILD RESOURCE AND APPEND TO THE PARENT PATH
+              } else {
+                data.body.createdDate = new Date();
+                var newResourcePathsArray = []; // ARRAY THAT HOLDS RESOURCE PATHS TO APPEND TO EXISTING RESOURCES
+                if(parentResourceName != '' || (filteredRoutes.length > 1)){
+                  var newParentPathsArray = [];  // ARRAY THAT HOLDS PARENT PATHS TO APPEND TO EXISTING RESOURCES
+                }
+                for(i=0; i<filteredRoutes.length; i++){
+                  if(filteredRoutes[i].length !== 1){
+                    var joinedRoute = filteredRoutes[i].join('|');
+                    var checkRoute = filteredRoutes[i].join('');
+                    if(instanceRoutes.indexOf(checkRoute) > -1){
+                      newResourcePathsArray.push(joinedRoute);
+                      filteredRoutes[i].pop();
+                      var joinedParentRoute = filteredRoutes[i].join('|');
+                      newParentPathsArray.push(joinedParentRoute);
+                    }
+                  } else {
+                    if(instanceRoutes.indexOf(String(filteredRoutes[i])) > -1){
+                      console.log('filteredRoutes[i]: ' + filteredRoutes[i]);
+                      newResourcePathsArray.push(String(filteredRoutes[i]));
+                    }
+                  }
+                }
+                var pushQuery = {};
+                if(parentResourceName != '' || (filteredRoutes.length > 1)){
+                  pushQuery[parentResourceName + '_'] = { '$each' : newParentPathsArray };
+                }
+                pushQuery[resourceName + '_'] = { '$each' : newResourcePathsArray };
+                data.updateQuery = {};
+                data.updateQuery['$push'] = pushQuery; // ADD THE PARENT RESOURCE PATH TO THE PARENT PATH ARRAY.
+                data.updateQuery['$set'] = data.body; // CORE RESOURCE INFORMATON TO UPDATE OR INSERT;
+                console.log('right before findandUpdateRecords: ' + JSON.stringify(data) + ' \n');
+                coredb.findAndUpdateRecords(data, callback); // UPDATE THE CHILD RESOURCE
+              }
+            }, function(err){
+                // if any of the file processing produced an error, err would equal that error
+                if( err ) {
+                  console.log('A resource failed to process');
+                  callback(err);
+                } else {
+                  console.log('All files have been processed successfully');
+                  data.instance = true;
+                  callback(null, data );
+                }
+            });
+            
+          } else { // THE CHILD RESOURCE DOESN'T EXIST AND CAN'T INSERT IT
+            callback(null, { 'instance' : false }); // CALLBACK SHOULD RESULT IN A 404
+            //callback('The child resource does not exist and cannot be inserted', ''); // CALLBACK SHOULD RESULT IN AN ERROR
+          }
+        },
+        function(results, callback){ // STAGES THE RESULTS INCLUDING HYPERMEDIA FOR THE RESPONSE
+          if (!results.instance){
+            return utility.returnNotFound(res); // RETURNS 404 ERROR
+          } else {
+            results.parent = req.path.split('/');
+            results.parent.pop();
+            results.parent = results.parent.join('/');
+            results.path = req.path;
+            results.resourceName = resourceName;
+            results.resourceType = 'instance';
+            results.req = req;
+            return utility.hypermediaStage(results, callback);
+          }
+        }
+      ],
+      function (err, results) {
+        console.log('final result: ' + JSON.stringify(results) + '\n');
+        if (err) {
+          console.log('err: ' + JSON.stringify(err) + '\n');
+          return utility.returnServerError(res);   
+        } else {
+          return utility.renderTemplate(res, results, resourceName, results.statusCode, results.headerObject);
+        }
+      });
+  }
+  
+  
   // REMOVE HIERARCHICAL ASSOCIATION
   this.removeChildInstances = function(req, res, resourceName, resourcePath, parentResourceName, parentPath, resourcePathRegex){    
     var findQuery = {};
