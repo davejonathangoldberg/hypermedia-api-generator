@@ -82,6 +82,7 @@ module.exports = function Composer(app) {
           if (!results.instance){
             return utility.returnNotFound(res); // RETURNS 404 ERROR
           } else {
+            console.log('results from collection: ' + JSON.stringify(results));
             results.parent = req.path.split('/');
             results.parent.pop();
             results.parent = results.parent.join('/');
@@ -195,17 +196,21 @@ module.exports = function Composer(app) {
             
             var instanceMap = {};
             var data = {};
+            var instanceRoutes = [];
             data.query = {};
             body.modifiedDate = new Date();
             data.body = body;
             
             // MAPS IDS FOR CURRENT REQUEST TO ROUTES FOR LOOKING UP.
-            var instanceRoutes = meta['validRoutes'];
-            instancesArray.push(body.id); 
-            console.log('instancesArray: ' + instancesArray);
+            for(q=0; q<meta['validRoutes'].length; q++){
+              instanceRoutes.push(meta['validRoutes'][q]);
+            }
+            instancesArray.push(req.body.id); 
+            
             for(i=0; i<lineageArray.length; i++){
-              for(j=0; j<meta['validRoutes'].length; j++){
-                instanceRoutes[j] = meta['validRoutes'][j].replace(lineageArray[i], instancesArray[i]);
+              for(j=0; j<instanceRoutes.length; j++){
+                instanceRoutes[j] = instanceRoutes[j].replace(lineageArray[i], instancesArray[i]);
+                console.log('meta[validroutes] after replace: ' + JSON.stringify(meta['validRoutes']));
               }
               instanceMap[instancesArray[i]] = lineageArray[i];
             };
@@ -417,6 +422,8 @@ module.exports = function Composer(app) {
             
             var instanceMap = {};
             var data = {};
+            var temporaryRoutesArray = {};
+            var instanceRoutes = [];
             data.options = {};
             data.statusCode = 201;
             data.options.upsert = true;
@@ -426,19 +433,26 @@ module.exports = function Composer(app) {
             data.body = req.body;
             
             // MAPS IDS FOR CURRENT REQUEST TO ROUTES FOR LOOKING UP.
-            var instanceRoutes = meta['validRoutes'];
+            
+            
+            for(q=0; q<meta['validRoutes'].length; q++){
+              instanceRoutes.push(meta['validRoutes'][q]);
+            }
             instancesArray.push(req.body.id); 
-            console.log('PUT instancesArray: ' + instancesArray);
+            
             for(i=0; i<lineageArray.length; i++){
-              for(j=0; j<meta['validRoutes'].length; j++){
-                instanceRoutes[j] = meta['validRoutes'][j].replace(lineageArray[i], instancesArray[i]);
+              for(j=0; j<instanceRoutes.length; j++){
+                instanceRoutes[j] = instanceRoutes[j].replace(lineageArray[i], instancesArray[i]);
+                console.log('meta[validroutes] after replace: ' + JSON.stringify(meta['validRoutes']));
               }
               instanceMap[instancesArray[i]] = lineageArray[i];
             };
             
             // FOR EACH RESOURCE GET ALL POTENTIAL ROUTES AND FILTER. ADD NEW RESOURCE ENTRY AND UPDATE RELATED ENTRIES. 
             console.log('data.options: ' + JSON.stringify(data.options) + '\n');
+            console.log('instancesArray: ' + JSON.stringify(instancesArray) + '\n');
             async.each(instancesArray, function( resource, callback ) {
+              console.log('each blah');
               console.log('data.options in each: ' + JSON.stringify(data.options) + '\n');
               console.log('resource: ' + resource);
               var currentResourceName = instanceMap[resource];
@@ -454,6 +468,7 @@ module.exports = function Composer(app) {
                   return ((a.indexOf(req.body.id) > -1) &&  (a.indexOf(req.body.id) == (a.length - 1))) ;
                 }
               });
+              console.log('filteredRoutes: ' + JSON.stringify(filteredRoutes));
               /*
                *
                *  THE FOLLOWING EXECUTES THIS LOGIC:
@@ -478,6 +493,9 @@ module.exports = function Composer(app) {
                   filteredRoutes[i].push(resource);
                   var joinedRoute = filteredRoutes[i].join('|');
                   var checkRoute = filteredRoutes[i].join('');
+                  console.log('instanceRoutes: ' + JSON.stringify(instanceRoutes));
+                  console.log('checkRoute: ' + checkRoute);
+                  console.log('instanceRoutes.indexOf(checkRoute): ' + instanceRoutes.indexOf(checkRoute));
                   if(instanceRoutes.indexOf(checkRoute) > -1){ // WHERE THE MAGIC HAPPENS. IF TRUE, THEN STAGE TO LOAD NEW RECORD INTO THESE RESOURCES. 
                     newParentPathsArray.push(joinedRoute);
                     filteredRoutes[i].pop();
@@ -502,6 +520,9 @@ module.exports = function Composer(app) {
                   if(filteredRoutes[i].length !== 1){
                     var joinedRoute = filteredRoutes[i].join('|');
                     var checkRoute = filteredRoutes[i].join('');
+                    console.log('instanceRoutes: ' + JSON.stringify(instanceRoutes));
+                    console.log('checkRoute: ' + checkRoute);
+                    console.log('instanceRoutes.indexOf(checkRoute): ' + instanceRoutes.indexOf(checkRoute));
                     if(instanceRoutes.indexOf(checkRoute) > -1){
                       newResourcePathsArray.push(joinedRoute);
                       filteredRoutes[i].pop();
@@ -509,6 +530,10 @@ module.exports = function Composer(app) {
                       newParentPathsArray.push(joinedParentRoute);
                     }
                   } else {
+                    console.log('instanceRoutes: ' + JSON.stringify(instanceRoutes) );
+                    console.log('filteredRoutes[i]: ' + filteredRoutes[i] );
+                    console.log('typeof filteredRoutes[i]: ' + typeof(filteredRoutes[i]) );
+                    console.log('instanceRoutes.indexOf(String(filteredRoutes[i])): ' + instanceRoutes.indexOf(String(filteredRoutes[i])) );
                     if(instanceRoutes.indexOf(String(filteredRoutes[i])) > -1){
                       console.log('filteredRoutes[i]: ' + filteredRoutes[i]);
                       newResourcePathsArray.push(String(filteredRoutes[i]));
@@ -646,6 +671,7 @@ module.exports = function Composer(app) {
             
             var instanceMap = {};
             var data = {};
+            var instanceRoutes = [];
             data.options = {};
             data.statusCode = 201;
             data.options.upsert = true;
@@ -655,16 +681,18 @@ module.exports = function Composer(app) {
             data.body = req.body;
             
             // MAPS IDS FOR CURRENT REQUEST TO ROUTES FOR LOOKING UP.
-            var instanceRoutes = meta['validRoutes'];
+            for(q=0; q<meta['validRoutes'].length; q++){
+              instanceRoutes.push(meta['validRoutes'][q]);
+            }
             instancesArray.push(req.body.id); 
-            console.log('PUT instancesArray: ' + instancesArray);
+            
             for(i=0; i<lineageArray.length; i++){
-              for(j=0; j<meta['validRoutes'].length; j++){
-                instanceRoutes[j] = meta['validRoutes'][j].replace(lineageArray[i], instancesArray[i]);
+              for(j=0; j<instanceRoutes.length; j++){
+                instanceRoutes[j] = instanceRoutes[j].replace(lineageArray[i], instancesArray[i]);
+                console.log('meta[validroutes] after replace: ' + JSON.stringify(meta['validRoutes']));
               }
               instanceMap[instancesArray[i]] = lineageArray[i];
             };
-            
             // FOR EACH RESOURCE GET ALL POTENTIAL ROUTES AND FILTER. ADD NEW RESOURCE ENTRY AND UPDATE RELATED ENTRIES. 
             console.log('data.options: ' + JSON.stringify(data.options) + '\n');
             async.each(instancesArray, function( resource, callback ) {
