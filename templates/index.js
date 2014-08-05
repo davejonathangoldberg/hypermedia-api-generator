@@ -2,18 +2,20 @@ var jjv = require('jjv');
 var env = jjv();
 var optionsSchema = {
     "type": "object",
-    "required": ["basepath", "mediaType"],
+    "required": ["basepath", "mediaType", "apiName"],
     "properties": {
         "basepath": { "type": "string" },
-        "mediaType": { "type": "string" }
+        "mediaType": { "type": "string" },
+        "apiName": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]{1,32}$"
+        }
     }
 }
 var resourcesSchema = {
     "type": "object",
     "required": ["resources"],
     "properties": {
-        "basepath": { "type": "string" },
-        "content-type": { "type": "string" },
         "resources" : {
             "type" : "array",
             "minItems" : 1,
@@ -25,12 +27,10 @@ var resourcesSchema = {
     },
     "definitions" : {
         "resource" : {
-            "required"   : ["name"],
+            "required"   : ["name", "model"],
             "properties" : {
                 "name"              : { "type" : "string" },
                 "model"             : { "type" : "string" },
-                "isCollection"      : { "type" : "boolean" },
-                "hasNamedInstances" : { "type" : "boolean" },
                 "resources"         : {
                     "type" : "array",
                     "minItems" : 1,
@@ -41,6 +41,25 @@ var resourcesSchema = {
                 }
             }
         }
+    }
+}
+var modelsBasicSchema = {
+    "type": "array",
+    "minItems" : 1,
+    "items" : {
+      "type" : "object",
+      "required" : ["title", "hasNamedInstances", "isCollection"],
+      "properties" : {
+        "title": {
+            "type": "string"
+        },
+        "hasNamedInstances" : {
+          "type" : "boolean"
+        },
+        "isCollection" : {
+          "type" : "boolean"
+        }
+      }
     }
 }
 var modelsSchema = {
@@ -198,5 +217,6 @@ var modelsSchema = {
 env.addSchema('resources', resourcesSchema);
 env.addSchema('options', optionsSchema);
 env.addSchema('models', modelsSchema);
+env.addSchema('basicModels', modelsBasicSchema);
 
 module.exports = env;

@@ -1,0 +1,37 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "personal_information", "href": "http://example.com/docs/rels/personal_information", "templated": false }]{{#if collection}},{{/if}}
+		{{#if collection}}"next": { "href": "{{path}}?offset=50&limit=50" }{{/if}}
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"personal_information" : [
+			{{#each personal_information}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"firstName" : "{{firstName}}",
+"lastName" : "{{lastName}}",
+"emailAddress" : "{{emailAddress}}",
+"phoneNumber" : "{{phoneNumber}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"firstName" : "{{personal_information.firstName}}",
+"lastName" : "{{personal_information.lastName}}",
+"emailAddress" : "{{personal_information.emailAddress}}",
+"phoneNumber" : "{{personal_information.phoneNumber}}",
+"id" : "{{personal_information.id}}"
+	{{/if}}
+}

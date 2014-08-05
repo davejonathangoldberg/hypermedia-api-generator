@@ -1,0 +1,12 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{{#each children}}{ "name": "{{this}}", "href": "http://example.com/docs/rels/{{this}}", "templated": false }{{#unless @last}},{{/unless}}{{/each}}]
+	}
+}

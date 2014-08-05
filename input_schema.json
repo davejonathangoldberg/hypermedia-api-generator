@@ -1,7 +1,11 @@
 {
     "type": "object",
-    "required": ["resources"],
+    "required": ["resources", "apiName"],
     "properties": {
+        "apiName": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]{1,32}$"
+        },
         "basepath": { "type": "string" },
         "content-type": { "type": "string" },
         "resources" : {
