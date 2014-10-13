@@ -107,6 +107,10 @@ module.exports = function Routes(app) {
         function(transformedData, callback){ // LAUNCH APP LOCALLY
           //callback();
           launchProject.localLaunch(transformedData, callback);
+        },
+        function(transformedData, callback){ // LAUNCH TO HEROKU
+          //callback();
+          launchProject.herokuLaunch(transformedData, callback);
         }
       ],
       function(err, results){
