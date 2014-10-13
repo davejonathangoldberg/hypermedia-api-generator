@@ -32,7 +32,7 @@ module.exports = function App() {
     }
   });
   
-  app.listen(localPort);
-  console.log('Listening on port ' + localPort + ' at ' + new Date());
+  app.listen(port);
+  console.log('Listening on port ' + port + ' at ' + new Date());
   return app;
 };

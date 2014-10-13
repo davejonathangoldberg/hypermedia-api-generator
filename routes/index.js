@@ -47,6 +47,7 @@ module.exports = function Routes(app) {
           validation.validateInputData(data, callback);
         },
         function(results, callback){ // VALIDATE ADDITIONAL FIELDS IN MODEL
+          console.log('STEP 2: VALIDATE ADDTIONAL FIELDS IN MODEL');
           var err;
           var missingFields= [];
           var missingFieldError = false;
@@ -58,6 +59,7 @@ module.exports = function Routes(app) {
             callback(err, '');
           }
           for (i=0; i<data.apiModels.length; i++){
+            // CHECK IF THE REQUIRED 'ISCOLLECTION' AND 'HASNAMEDINSTANCES' ATTRIBUTES ARE THERE
             if((typeof(data.apiModels[i].isCollection) == 'undefined') || (typeof(data.apiModels[i].hasNamedInstances) == 'undefined')) {
               console.log('typeOf(data.apiModels[i].isCollection): ' + typeof(data.apiModels[i].isCollection));
               console.log('!(data.apiModels[i].hasNamedInstances): ' + !(data.apiModels[i].hasNamedInstances));
@@ -74,8 +76,15 @@ module.exports = function Routes(app) {
           }
           else callback(null, 'success');
         },
+        function(results, callback){
+          // VALIDATE REQUIREMENTS BLOCK
+          console.log('STEP 3: VALIDATE REQUIREMENTS BLOCK');
+          validation.replaceRequiredProperties(data, callback);
+        },
         function(results, callback){ // TRANSFORM INPUT
+          console.log('STEP 4: TRANSFORM');
           transform.transformInput(data, callback);
+          //callback(null, 'success');
         },
         function(transformedData, callback){ // WRITE PROJECT STRUCTURE AND COPY STATIC FILES
           console.log('results after transform: ' + JSON.stringify(transformedData) + '\n');
@@ -93,8 +102,10 @@ module.exports = function Routes(app) {
             }
           }
           writeProject.projectStructure(transformedData, callback);
+          //callback(null, 'success');
         },
         function(transformedData, callback){ // LAUNCH APP LOCALLY
+          //callback();
           launchProject.localLaunch(transformedData, callback);
         }
       ],
