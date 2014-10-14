@@ -1,0 +1,30 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "email_addresses", "href": "http://example.com/docs/rels/email_addresses", "templated": false }]
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"email_addresses" : [
+			{{#each email_addresses}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"emailAddress" : "{{emailAddress}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"emailAddress" : "{{email_addresses.emailAddress}}",
+"id" : "{{email_addresses.id}}"
+	{{/if}}
+}
