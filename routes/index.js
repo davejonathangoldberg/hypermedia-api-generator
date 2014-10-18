@@ -76,7 +76,7 @@ module.exports = function Routes(app) {
           }
           else callback(null, 'success');
         },
-        function(results, callback){
+        function(results, callback){ // ADDITIONAL VALIDATION
           // VALIDATE REQUIREMENTS BLOCK
           console.log('STEP 3: VALIDATE REQUIREMENTS BLOCK');
           validation.replaceRequiredProperties(data, callback);
@@ -95,9 +95,9 @@ module.exports = function Routes(app) {
           for(i=0; i<transformedData.lineageArrays.nameArray; i++){
             if(modelsArray.indexOf(transformedData.lineageArray.nameArray[i]) < 0){
               err = {
-              "type" : "validation mismatch",
-              "value" : "You have specified a resource that does not have an associated model"
-            }; 
+                "type" : "validation mismatch",
+                "value" : "You have specified a resource that does not have an associated model"
+              }; 
               callback(err,'');
             }
           }
@@ -118,10 +118,11 @@ module.exports = function Routes(app) {
       function(err, results){
         if (err) {
           console.log('err: ' + JSON.stringify(err) + '\n');
+          res.statusCode = 500;
           return res.json({ "error" : err.type, "value" : err.value }); // RETURNS 500 ERROR 
         } else {
           //console.log('success: ' + JSON.stringify(data) + '\n');
-          return res.json(data);
+          return res.json(results);
         }
       });  
     

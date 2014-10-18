@@ -12,6 +12,7 @@
     "jjv": "~1.0.0",
     "mongodb": "*",
     "mongoose": "~3.8.8",
+    "retry": "^0.6.1",
     "validator": "~2.0.0",
     "z-schema": "2.4.7"
   }
