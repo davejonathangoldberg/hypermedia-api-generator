@@ -122,7 +122,9 @@ module.exports = function Routes(app) {
           return res.json({ "error" : err.type, "value" : err.value }); // RETURNS 500 ERROR 
         } else {
           //console.log('success: ' + JSON.stringify(data) + '\n');
-          return res.json(results);
+          res.statusCode = 202;
+          //return res.json(results);
+          return res.json({ "status" : "pending" });
         }
       });  
     
