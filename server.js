@@ -5,7 +5,6 @@ var dbConfig = require("./dbconfig.json");
 
 var app = new App();
 var database = new Database(dbConfig);
-var raml = require('raml-parser');
 
 // ESTABLISH ROUTE CLASSES & ROUTES
 var Routes = require('./routes');
