@@ -10,10 +10,12 @@ module.exports = function Routes(app) {
   var Transform = require('../lib/transform.js')
   var WriteProject = require('../lib/write_project_new.js');
   var LaunchProject = require('../lib/launch_project.js');
+  var LaunchClient = require('../lib/launch_client.js');
   var validation = new Validation();
   var transform = new Transform();
   var writeProject = new WriteProject(app);
   var launchProject = new LaunchProject();
+  var launchClient = new LaunchClient();
   
   app.post('/', function(req, res, next){      
     
@@ -113,6 +115,9 @@ module.exports = function Routes(app) {
         function(transformedData, callback){ // LAUNCH TO HEROKU
           //callback();
           launchProject.herokuLaunch(transformedData, callback);
+        },
+        function(transformedData, newAppDetailsResponse, callback){ // WRITE SWAGGER
+          launchClient.constructSwagger(transformedData, newAppDetailsResponse.web_url, callback);
         }
       ],
       function(err, results){
@@ -125,6 +130,7 @@ module.exports = function Routes(app) {
           res.statusCode = 202;
           //return res.json(results);
           return res.json({ "status" : "pending" });
+          return res.json(results);
         }
       });  
     
