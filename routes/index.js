@@ -129,7 +129,7 @@ module.exports = function Routes(app) {
           //console.log('success: ' + JSON.stringify(data) + '\n');
           res.statusCode = 202;
           //return res.json(results);
-          return res.json({ "status" : "pending" });
+          //return res.json({ "status" : "pending" });
           return res.json(results);
         }
       });  
