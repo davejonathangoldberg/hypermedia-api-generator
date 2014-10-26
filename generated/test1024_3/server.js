@@ -3,8 +3,13 @@ var App = require('./App.js');
 var Database = require('./Database.js');
 var dbConfig = require('./dbconfig.json');
 var Composer = require('./shared/composer.js');
-{{#each resources}}var {{this.titleLineage}}Routes = require('./routes/{{this.lineage}}');
-{{/each}}
+var SpeakersRoutes = require('./routes/speakers');
+var SpeakersTopicsRoutes = require('./routes/speakerstopics');
+var SpeakersEmail_addressesRoutes = require('./routes/speakersemail_addresses');
+var TopicsRoutes = require('./routes/topics');
+var TopicsSpeakersRoutes = require('./routes/topicsspeakers');
+var DetailsRoutes = require('./routes/details');
+
 
 var app = new App();
 var database = new Database(dbConfig);
@@ -39,17 +44,17 @@ app.post('*', function(req, res, next){
   return next();
 });
 
-app.options('*', function(req, res, next){
-  res.statusCode(200);
-  return res.send('');
-});
-
 app.get('/', function(req, res, next){      
   return composer.retrieveRoot(req, res);
 });
 
-{{#each resources}}var {{this.altTitleLineage}}Routes = new {{this.titleLineage}}Routes(app);
-{{/each}}
+var speakersRoutes = new SpeakersRoutes(app);
+var speakersTopicsRoutes = new SpeakersTopicsRoutes(app);
+var speakersEmail_addressesRoutes = new SpeakersEmail_addressesRoutes(app);
+var topicsRoutes = new TopicsRoutes(app);
+var topicsSpeakersRoutes = new TopicsSpeakersRoutes(app);
+var detailsRoutes = new DetailsRoutes(app);
+
 
 app.all('*', function(req, res){
   var errorMessage = "Invalid or Unsupported Request. Please check your input and try again.";

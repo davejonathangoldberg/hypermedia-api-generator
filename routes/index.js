@@ -116,8 +116,8 @@ module.exports = function Routes(app) {
           //callback();
           launchProject.herokuLaunch(transformedData, callback);
         },
-        function(transformedData, newAppDetailsResponse, callback){ // WRITE SWAGGER
-          launchClient.constructSwagger(transformedData, newAppDetailsResponse.web_url, callback);
+        function(transformedData, callback){ // WRITE SWAGGER
+          launchClient.constructSwagger(transformedData, callback);
         }
       ],
       function(err, results){
