@@ -70,16 +70,14 @@ module.exports = function Routes(app) {
               if (typeof(data.apiModels[i].isCollection) !== 'boolean') {
                 if (data.apiModels[i].isCollection.toLowerCase() === 'true') {
                   data.apiModels[i].isCollection = true;
-                };
-                if (data.apiModels[i].isCollection.toLowerCase() === 'false') {
+                } else if (data.apiModels[i].isCollection.toLowerCase() === 'false') {
                   data.apiModels[i].isCollection = false;
                 };
               };
               if (typeof(data.apiModels[i].hasNamedInstances) !== 'boolean') {
                 if (data.apiModels[i].hasNamedInstances.toLowerCase() === 'true') {
                   data.apiModels[i].hasNamedInstances = true;
-                };
-                if (data.apiModels[i].hasNamedInstances.toLowerCase() === 'false') {
+                } else if (data.apiModels[i].hasNamedInstances.toLowerCase() === 'false') {
                   data.apiModels[i].hasNamedInstances = false;
                 };
               };
