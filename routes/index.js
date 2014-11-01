@@ -25,6 +25,8 @@ module.exports = function Routes(app) {
      *
      */
     
+    console.log('req.body: ' + JSON.stringify(req.body) + '\n\n');
+    
     // INITIALIZE VARIABLES
     var data = {};
     data.apiOptions = {};
@@ -45,10 +47,7 @@ module.exports = function Routes(app) {
     // EXECUTE APPLICATION STEPS IN SERIES
     async.waterfall(
       [
-        function(callback){ // VALIDATE INPUT
-          validation.validateInputData(data, callback);
-        },
-        function(results, callback){ // VALIDATE ADDITIONAL FIELDS IN MODEL
+        function(callback){ // VALIDATE ADDITIONAL FIELDS IN MODEL
           console.log('STEP 2: VALIDATE ADDTIONAL FIELDS IN MODEL');
           var err;
           var missingFields= [];
@@ -67,6 +66,23 @@ module.exports = function Routes(app) {
               console.log('!(data.apiModels[i].hasNamedInstances): ' + !(data.apiModels[i].hasNamedInstances));
               missingFields.push(data.apiModels[i].title);
               missingFieldError = true;
+            } else {
+              if (typeof(data.apiModels[i].isCollection) !== 'boolean') {
+                if (data.apiModels[i].isCollection.toLowerCase() === 'true') {
+                  data.apiModels[i].isCollection = true;
+                };
+                if (data.apiModels[i].isCollection.toLowerCase() === 'false') {
+                  data.apiModels[i].isCollection = false;
+                };
+              };
+              if (typeof(data.apiModels[i].hasNamedInstances) !== 'boolean') {
+                if (data.apiModels[i].hasNamedInstances.toLowerCase() === 'true') {
+                  data.apiModels[i].hasNamedInstances = true;
+                };
+                if (data.apiModels[i].hasNamedInstances.toLowerCase() === 'false') {
+                  data.apiModels[i].hasNamedInstances = false;
+                };
+              };
             };
           }
           if(missingFieldError) {
@@ -77,6 +93,9 @@ module.exports = function Routes(app) {
             callback(err, '');
           }
           else callback(null, 'success');
+        },
+        function(results, callback){ // VALIDATE INPUT
+          validation.validateInputData(data, callback);
         },
         function(results, callback){ // ADDITIONAL VALIDATION
           // VALIDATE REQUIREMENTS BLOCK
