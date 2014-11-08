@@ -1,4 +1,4 @@
- {
+{
   "name": "API_generator",
   "description": "This is the initial version of the API generator.",
   "version": "0.0.1",
@@ -11,7 +11,7 @@
     "jayschema": "0.2.7",
     "jjv": "~1.0.0",
     "mongodb": "*",
-    "mongoose": "~3.8.8",
+    "mongoose": "^3.8.18",
     "retry": "^0.6.1",
     "validator": "~2.0.0",
     "z-schema": "2.4.7"

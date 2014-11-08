@@ -2,8 +2,10 @@ module.exports = function Routes(app) {
   
   // REQUIRED LIBRARIES
   var jjv = require('jjv');
-  var ZSchema = require('z-schema');
   var async = require('async');
+  var http = require('http');
+  var https = require('https');
+  var url = require('url');
   
   // RELATIVE REFERENCES 
   var Validation = require('../lib/validation.js');
@@ -11,11 +13,39 @@ module.exports = function Routes(app) {
   var WriteProject = require('../lib/write_project_new.js');
   var LaunchProject = require('../lib/launch_project.js');
   var LaunchClient = require('../lib/launch_client.js');
+  var Composer = require('../lib/composer.js');
   var validation = new Validation();
   var transform = new Transform();
   var writeProject = new WriteProject(app);
   var launchProject = new LaunchProject();
   var launchClient = new LaunchClient();
+  var composer = new Composer();
+  
+  function apiResponseObject(data, callback){
+    var responseObject;
+    responseObject = {
+      "_links": {
+          "self": {
+              "href": data.selfUrl
+          },
+          "deployedApi" : {
+              "href": data.deployedApiUrl
+          },
+          "modelshipApiDescription" : {
+              "href" : data.modelshipApiDescriptionUrl
+          },
+          "swaggerApiDescription" : {
+              "href" : data.swaggerApiDescriptionUrl
+          }
+      },
+      "id" : data.apiId,
+      "apiName" : data.apiName,
+      "status" : data.status,
+      "createdDate" : data.createdDate,
+      "modifiedDate" : data.modifiedDate
+    };
+    callback(null, responseObject);
+  }
   
   app.post('/', function(req, res, next){      
     
@@ -28,6 +58,7 @@ module.exports = function Routes(app) {
     console.log('req.body: ' + JSON.stringify(req.body) + '\n\n');
     
     // INITIALIZE VARIABLES
+    var apiObject = {};
     var data = {};
     data.apiOptions = {};
     data.apiResources = {};
@@ -37,6 +68,7 @@ module.exports = function Routes(app) {
     data.apiOptions.basepath = req.body.basepath ? req.body.basepath : '/';
     data.apiOptions.mediaType = req.body.mediaType ? req.body.mediaType : 'application/json';
     data.apiOptions.apiName = req.body.apiName;
+    data.apiOptions.webhookUrl = req.body.webhookUrl ? req.body.webhookUrl : '';
     
     // MAP API RESOURCES
     data.apiResources = req.body.resources ? { "resources" : req.body.resources } : null;
@@ -54,8 +86,10 @@ module.exports = function Routes(app) {
           var missingFieldError = false;
           if (data.apiModels.length < 1) {
             err = {
-              "type" : "validation",
-              "value" : "At least one model is required to create an API."
+              "name" : "General",
+              "code" : 400,
+              "type" : "Validation",
+              "value" : "General Validation Error"
             }; 
             callback(err, '');
           }
@@ -85,7 +119,9 @@ module.exports = function Routes(app) {
           }
           if(missingFieldError) {
             err = {
-              "type" : "validation",
+              "name" : "Models",
+              "code" : 400,
+              "type" : "Validation",
               "value" : "Missing either 'isCollection' of 'hasNamedInstances' fields in the following models: " +  missingFields.join(', ')
             }; 
             callback(err, '');
@@ -100,8 +136,13 @@ module.exports = function Routes(app) {
           console.log('STEP 3: VALIDATE REQUIREMENTS BLOCK');
           validation.replaceRequiredProperties(data, callback);
         },
+        function(results, callback){ // SAVE IN DB
+          composer.saveApi(data, callback);
+        },
         function(results, callback){ // TRANSFORM INPUT
           console.log('STEP 4: TRANSFORM');
+          console.log('results: ' + JSON.stringify(results));
+          data['apiId'] = results['id'];
           transform.transformInput(data, callback);
           //callback(null, 'success');
         },
@@ -114,7 +155,9 @@ module.exports = function Routes(app) {
           for(i=0; i<transformedData.lineageArrays.nameArray; i++){
             if(modelsArray.indexOf(transformedData.lineageArray.nameArray[i]) < 0){
               err = {
-                "type" : "validation mismatch",
+                "name" : "Resource Model Mismatch",
+                "code" : 400,
+                "type" : "Validation",
                 "value" : "You have specified a resource that does not have an associated model"
               }; 
               callback(err,'');
@@ -123,35 +166,139 @@ module.exports = function Routes(app) {
           writeProject.projectStructure(transformedData, callback);
           //callback(null, 'success');
         },
-        /*
-        function(transformedData, callback){ // LAUNCH APP LOCALLY
-          //callback();
-          launchProject.localLaunch(transformedData, callback);
-        },
-        */
         function(transformedData, callback){ // LAUNCH TO HEROKU
           //callback();
           launchProject.herokuLaunch(transformedData, callback);
         },
         function(transformedData, callback){ // WRITE SWAGGER
           launchClient.constructSwagger(transformedData, callback);
+          //callback();
         }
       ],
       function(err, results){
         if (err) {
           console.log('err: ' + JSON.stringify(err) + '\n');
-          res.statusCode = 500;
-          return res.json({ "error" : err.type, "value" : err.value }); // RETURNS 500 ERROR 
+          res.statusCode = (err.code == 400) ? 400 : 500;
+          return res.json({ "name" : err.name, "error" : err.type, "value" : err.value }); // RETURNS 500 ERROR 
         } else {
-          //console.log('success: ' + JSON.stringify(data) + '\n');
-          res.statusCode = 202;
+          console.log('success: ' + JSON.stringify(results) + '\n');
+          apiObject['apiId'] = results.instance.id;
+          apiObject['apiName'] = results.instance.name;
+          apiObject['status'] = results.instance.status;
+          apiObject['createdDate'] = results.instance.createdDate;
+          apiObject['modifiedDate'] = results.instance.modifiedDate;
+          apiObject['selfUrl'] = ''; //TBD
+          apiObject['deployedApiUrl'] = 'TBD'; //NOT YET AVAILABLE
+          apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+          apiResponseObject(apiObject, function(err, responseObject){
+            res.set('Location', responseObject._links.self.href);
+            res.statusCode = 202;
+            return res.json(responseObject);
+          });
           //return res.json(results);
           //return res.json({ "status" : "pending" });
-          return res.json(results);
+          
         }
       });  
     
     
   });
-
+  
+  app.post('/inbound_hooks/:apiId/:webhookUrl', function(req, res, next){
+    /*
+     * RECEIVES INBOUND HOOK
+     * UPDATE STATUS IN DB TO ACTIVE
+     * SEND OUTBOUND WEB HOOK TO REGISTERED WEB HOOK (REQUIRES DB LOOKUP OR PARAMS IN URL)
+     * 
+     */
+    console.log('req.params: ' + req.params['apiId']);
+    console.log('\nwebhookUrl: ' + req.params['webhookUrl']);
+    console.log("\ninbound_hooks: " + JSON.stringify(req.body));
+    var hookResponse;
+    var apiObject = {};
+    var updateData = {};
+    var modifiedDate = new Date();
+    var parsedWebhookUrl = url.parse(req.params['webhookUrl']);
+    console.log('parsedWebhookUrl.hostname: ' + parsedWebhookUrl.hostname);
+    console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
+    console.log('\nparsedWebhookUrl.path: ' + parsedWebhookUrl.path);
+    updateData['queryKey'] = 'id';
+    updateData['queryValue'] = req.params['apiId'];
+    updateData['updateObject'] = { "status" : "active720", "modifiedDate" : modifiedDate };
+    composer.updateApi(updateData, function(err, data){
+      if(err){
+        res.status(500).json(err);
+      } else {
+        //res.status(200).json(data);
+        console.log('data from update API: ' + JSON.stringify(data));
+        apiObject['apiId'] = req.params['apiId'];
+        apiObject['apiName'] = data.instance.name;
+        apiObject['status'] = data.instance.status;
+        apiObject['createdDate'] = data.instance.createdDate;
+        apiObject['modifiedDate'] = data.instance.modifiedDate;
+        apiObject['selfUrl'] = ''; //TBD
+        apiObject['deployedApiUrl'] = req.body['url'];
+        apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
+        apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+        apiResponseObject(apiObject, function(err, responseObject){
+          console.log('responseObject: ' + JSON.stringify(responseObject) );
+          parsedWebhookUrl.protocol = parsedWebhookUrl.protocol || 'http';
+          var options = {
+            hostname: parsedWebhookUrl.hostname,
+            port: parsedWebhookUrl.port,
+            path: parsedWebhookUrl.path,
+            method: 'POST',
+            headers: {
+              "content-type": "application/json"
+            }
+          };
+          
+          var httpRequestType = parsedWebhookUrl.protocol == 'http:' ? http : https;
+          var httpReq = httpRequestType.request(options, function(httpRes) {
+            var responseString = '';
+            console.log('STATUS: ' + httpRes.statusCode);
+            console.log('HEADERS: ' + JSON.stringify(httpRes.headers));
+            httpRes.setEncoding('utf8');
+            httpRes.on('data', function (chunk) {
+              console.log('BODY: ' + chunk);
+              responseString += chunk;
+            });
+            httpRes.on('end', function() {
+              hookResponse = responseString;
+              console.log('Hook Response: ' + JSON.stringify(hookResponse));
+              if((httpRes.statusCode === 200) || (httpRes.statusCode === 201) || (httpRes.statusCode === 202)){
+                console.log('equal to 200, 201, 202');
+                res.status(200).json(responseObject);
+              } else {
+                console.log('not equal to 200, 201, 202: ' + httpRes.statusCode);
+                var err = {
+                  "name" : "Webhook Error",
+                  "code" : 500,
+                  "type" : "Webhook",
+                  "value" : "Webhook to Client failed."
+                };
+                res.status(500).send(JSON.stringify(err));
+              }
+            });
+          });
+          
+          httpReq.on('error', function(e) {
+            console.log('problem with request: ' + e.message);
+            var err = {
+              "name" : "Webhook Error",
+              "code" : 500,
+              "type" : "Webhook",
+              "value" : "Webhook to Client failed."
+            };
+            res.status(500).send(JSON.stringify(err));
+          });
+          
+          // write data to request body
+          httpReq.write(JSON.stringify(responseObject));
+          httpReq.end();    
+        });  //END CALLBACK FROM COMPOSING THE RESPONSE OBJECT
+      }
+    }); // END CALLBACK FROM UPDATING RECORD IN DB
+  }); // END APP.POST /INBOUND_HOOKS
 }

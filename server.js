@@ -1,10 +1,10 @@
 // server.js: composition root
 var App = require("./App.js");
-//var Database = require("./Database.js");
-//var dbConfig = require("./dbconfig.json");
+var Database = require("./Database.js");
+var dbConfig = require("./dbconfig.json");
 
 var app = new App();
-//var database = new Database(dbConfig);
+var database = new Database(dbConfig);
 
 // ESTABLISH ROUTE CLASSES & ROUTES
 var Routes = require('./routes');

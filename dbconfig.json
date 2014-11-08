@@ -1,5 +1,5 @@
 {
   "host"      : "localhost:27017/",
-  "database"  : "generator",
+  "database"  : "apis",
   "safe"      : "true"
 }

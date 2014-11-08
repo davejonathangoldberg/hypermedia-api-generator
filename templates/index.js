@@ -48,7 +48,7 @@ var modelsBasicSchema = {
     "minItems" : 1,
     "items" : {
       "type" : "object",
-      "required" : ["title", "hasNamedInstances", "isCollection"],
+      "required" : ["title", "properties", "type", "hasNamedInstances", "isCollection"],
       "properties" : {
         "title": {
             "type": "string"
@@ -58,6 +58,12 @@ var modelsBasicSchema = {
         },
         "isCollection" : {
           "type" : "boolean"
+        },
+        "type" : {
+            "type" : "string"
+        },
+        "properties" : {
+            "type" : "object"
         }
       }
     }

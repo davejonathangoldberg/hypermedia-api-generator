@@ -1,0 +1,32 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "details", "href": "http://example.com/docs/rels/details", "templated": false }]
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"details" : [
+			{{#each details}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"location" : "{{location}}",
+"time" : "{{time}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"location" : "{{details.location}}",
+"time" : "{{details.time}}",
+"id" : "{{details.id}}"
+	{{/if}}
+}
