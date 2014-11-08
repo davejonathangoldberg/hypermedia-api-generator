@@ -1,7 +1,7 @@
 // Database.js
 module.exports = function Database(configuration) {
   var mongoose = require('mongoose');
-  var mongooseUri = process.env.MONGOLAB_URI ||
+  var mongooseUri = process.env.MONGO_STRING || process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL || 'mongodb://' + 
   configuration.host + configuration.database;
   console.log('mongooseURI = ' + mongooseUri);
