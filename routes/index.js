@@ -47,7 +47,7 @@ module.exports = function Routes(app) {
     callback(null, responseObject);
   }
   
-  app.post('/', function(req, res, next){      
+  app.post('/apis', function(req, res, next){      
     
     /*
      *
@@ -301,4 +301,124 @@ module.exports = function Routes(app) {
       }
     }); // END CALLBACK FROM UPDATING RECORD IN DB
   }); // END APP.POST /INBOUND_HOOKS
+
+  app.get('/apis/:apiId/swagger', function(req, res, next){
+     /*
+     *
+     * LOOKS UP API RECORD IN MONGODB
+     *   IF NOT EXIST RETURN 404
+     *   IF EXIST
+     *    CHECK IF SWAGGER IS EMPTY
+     *      IF IT IS EMPTY RETURN 404
+     *      IF NOT,
+     *        PULL SWAGGER DESCRIPTION
+     *        RETURN 200
+     * 
+     */
+    var data = {};
+    data.queryKey = 'id';
+    data.queryValue = req.params['apiId'];
+    composer.retrieveApi(data, function(err, record){
+      if(err){
+        if(err.code == 404){
+          return res.send(404, '');
+        } else {
+          return res.send(500, 'Blast!');
+        }
+      } else {
+        console.log('typeOf record.instance.swagger: ' + typeof(record.instance.swagger));
+        console.log('value of record.instance.swagger: ' + JSON.stringify(record.instance.swagger));
+        if(typeof(record.instance.swagger) == 'undefined' || record.instance.swagger == ''){
+          return res.send(404, '');
+        } else {
+          return res.status(200).json(record.instance.swagger); 
+        }
+      }
+    });
+     
+  });
+  
+  app.get('/apis/:apiId/api-spec', function(req, res, next){
+     /*
+     *
+     * LOOKS UP API RECORD IN MONGODB
+     *   IF NOT EXIST RETURN 404
+     *   IF EXIST
+     *    CHECK IF SWAGGER IS EMPTY
+     *      IF IT IS EMPTY RETURN 404
+     *      IF NOT,
+     *        PULL SWAGGER DESCRIPTION
+     *        RETURN 200
+     * 
+     */
+    var data = {};
+    data.queryKey = 'id';
+    data.queryValue = req.params['apiId'];
+    composer.retrieveApi(data, function(err, record){
+      if(err){
+        if(err.code == 404){
+          return res.send(404, '');
+        } else {
+          return res.send(500, 'Blast!');
+        }
+      } else {
+        console.log('typeOf record.instance.input: ' + typeof(record.instance.input));
+        if(typeof(record.instance.input) == 'undefined' || record.instance.input == ''){
+          return res.send(404, '');
+        } else {
+          return res.status(200).json(record.instance.input); 
+        }
+      }
+    });
+     
+  });
+  
+  app.get('/apis/:apiId', function(req, res, next){
+     /*
+     *
+     * LOOKS UP API RECORD IN MONGODB
+     *   IF NOT EXIST RETURN 404
+     *   IF EXIST
+     *    CHECK IF SWAGGER IS EMPTY
+     *      IF IT IS EMPTY RETURN 404
+     *      IF NOT,
+     *        PULL SWAGGER DESCRIPTION
+     *        RETURN 200
+     * 
+     */
+    var data = {};
+    var apiObject = {};
+    data.queryKey = 'id';
+    data.queryValue = req.params['apiId'];
+    composer.retrieveApi(data, function(err, record){
+      if(err){
+        if(err.code == 404){
+          return res.send(404, '');
+        } else {
+          return res.send(500, 'Blast!');
+        }
+      } else {
+        console.log('typeOf record.instance.input: ' + typeof(record.instance.input));
+        if(typeof(record.instance) == 'undefined' || record.instance == ''){
+          return res.send(404, '');
+        } else {
+          apiObject['apiId'] = record.instance.id;
+          apiObject['apiName'] = record.instance.name;
+          apiObject['status'] = record.instance.status;
+          apiObject['createdDate'] = record.instance.createdDate;
+          apiObject['modifiedDate'] = record.instance.modifiedDate;
+          apiObject['selfUrl'] = ''; //TBD
+          apiObject['deployedApiUrl'] = record.instance.productionUrl || '';
+          apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+          apiResponseObject(apiObject, function(err, responseObject){
+            return res.status(200).json(responseObject); 
+          });
+        }
+      }
+    });
+     
+  });
+
+
 }
