@@ -1,5 +1,5 @@
 {
-  "host"      : process.env.MONGO_HOST || "localhost:27017/",
-  "database"  : process.env.MONGO_DBNAME || "apis",
+  "host"      : "localhost:27017/",
+  "database"  : "apis",
   "safe"      : "true"
 }
