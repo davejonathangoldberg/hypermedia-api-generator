@@ -21,6 +21,9 @@ module.exports = function Routes(app) {
   var launchClient = new LaunchClient();
   var composer = new Composer();
   
+  // GLOBAL
+  var baseUrl = process.env['BASE_URL'] || '';
+  
   function apiResponseObject(data, callback){
     var responseObject;
     responseObject = {
@@ -46,6 +49,10 @@ module.exports = function Routes(app) {
     };
     callback(null, responseObject);
   }
+  
+  app.get('/', function(req, res, next){
+    return res.status(200).send('success');  
+  });
   
   app.post('/apis', function(req, res, next){      
     
@@ -187,10 +194,10 @@ module.exports = function Routes(app) {
           apiObject['status'] = results.instance.status;
           apiObject['createdDate'] = results.instance.createdDate;
           apiObject['modifiedDate'] = results.instance.modifiedDate;
-          apiObject['selfUrl'] = ''; //TBD
+          apiObject['selfUrl'] = baseUrl; //TBD
           apiObject['deployedApiUrl'] = 'TBD'; //NOT YET AVAILABLE
-          apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
-          apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/swagger'; //TBD
           apiResponseObject(apiObject, function(err, responseObject){
             res.set('Location', responseObject._links.self.href);
             res.statusCode = 202;
@@ -237,10 +244,10 @@ module.exports = function Routes(app) {
         apiObject['status'] = data.instance.status;
         apiObject['createdDate'] = data.instance.createdDate;
         apiObject['modifiedDate'] = data.instance.modifiedDate;
-        apiObject['selfUrl'] = ''; //TBD
+        apiObject['selfUrl'] = baseUrl; //TBD
         apiObject['deployedApiUrl'] = req.body['url'];
-        apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
-        apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+        apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
+        apiObject['swaggerApiDescriptionUrl'] = baseUrl; //TBD
         apiResponseObject(apiObject, function(err, responseObject){
           console.log('responseObject: ' + JSON.stringify(responseObject) );
           parsedWebhookUrl.protocol = parsedWebhookUrl.protocol || 'http';
@@ -407,10 +414,10 @@ module.exports = function Routes(app) {
           apiObject['status'] = record.instance.status;
           apiObject['createdDate'] = record.instance.createdDate;
           apiObject['modifiedDate'] = record.instance.modifiedDate;
-          apiObject['selfUrl'] = ''; //TBD
+          apiObject['selfUrl'] = baseUrl; //TBD
           apiObject['deployedApiUrl'] = record.instance.productionUrl || '';
-          apiObject['modelshipApiDescriptionUrl'] = ''; //TBD
-          apiObject['swaggerApiDescriptionUrl'] = ''; //TBD
+          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/swagger'; //TBD
           apiResponseObject(apiObject, function(err, responseObject){
             return res.status(200).json(responseObject); 
           });
