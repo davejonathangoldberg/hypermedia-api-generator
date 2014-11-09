@@ -6,13 +6,16 @@ var dbConfig = require("./dbconfig.json");
 var app = new App();
 var database = new Database(dbConfig);
 
+app.get('*', function(req, res, next){
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, PATCH, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, api_key, Authorization');
+    next();
+  });
+
 // ESTABLISH ROUTE CLASSES & ROUTES
 var Routes = require('./routes');
 var routes = new Routes(app);
-
-app.get('/', function(req, res, next){
-return res.send('Success');
-});
 
 app.post('*', function(req, res, next){
   if (!req.is('json')) {
