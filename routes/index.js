@@ -232,7 +232,7 @@ module.exports = function Routes(app) {
     console.log('\nparsedWebhookUrl.path: ' + parsedWebhookUrl.path);
     updateData['queryKey'] = 'id';
     updateData['queryValue'] = req.params['apiId'];
-    updateData['updateObject'] = { "status" : "active720", "modifiedDate" : modifiedDate };
+    updateData['updateObject'] = { "status" : "active", "modifiedDate" : modifiedDate };
     composer.updateApi(updateData, function(err, data){
       if(err){
         res.status(500).json(err);
