@@ -29,7 +29,7 @@ module.exports = function Routes(app) {
     responseObject = {
       "_links": {
           "self": {
-              "href": data.selfUrl
+              "href": data.selfUrl + '/apis/' + data.apiId
           },
           "deployedApi" : {
               "href": data.deployedApiUrl
@@ -196,8 +196,8 @@ module.exports = function Routes(app) {
           apiObject['modifiedDate'] = results.instance.modifiedDate;
           apiObject['selfUrl'] = baseUrl; //TBD
           apiObject['deployedApiUrl'] = 'TBD'; //NOT YET AVAILABLE
-          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
-          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/swagger'; //TBD
+          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/apis/' + results.instance.id + '/api-sec'; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/apis/' + results.instance.id + '/swagger'; //TBD
           apiResponseObject(apiObject, function(err, responseObject){
             res.set('Location', responseObject._links.self.href);
             res.statusCode = 202;
@@ -246,8 +246,8 @@ module.exports = function Routes(app) {
         apiObject['modifiedDate'] = data.instance.modifiedDate;
         apiObject['selfUrl'] = baseUrl; //TBD
         apiObject['deployedApiUrl'] = req.body['url'];
-        apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
-        apiObject['swaggerApiDescriptionUrl'] = baseUrl; //TBD
+        apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/apis/' + req.params['apiId'] + '/api-sec'; //TBD
+        apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/apis/' + req.params['apiId'] + '/swagger'; //TBD
         apiResponseObject(apiObject, function(err, responseObject){
           console.log('responseObject: ' + JSON.stringify(responseObject) );
           parsedWebhookUrl.protocol = parsedWebhookUrl.protocol || 'http';
@@ -416,8 +416,8 @@ module.exports = function Routes(app) {
           apiObject['modifiedDate'] = record.instance.modifiedDate;
           apiObject['selfUrl'] = baseUrl; //TBD
           apiObject['deployedApiUrl'] = record.instance.productionUrl || '';
-          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/api-sec'; //TBD
-          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/swagger'; //TBD
+          apiObject['modelshipApiDescriptionUrl'] = baseUrl + '/apis/' + record.instance.id + '/api-sec'; //TBD
+          apiObject['swaggerApiDescriptionUrl'] = baseUrl + '/apis/' + record.instance.id + '/swagger'; //TBD
           apiResponseObject(apiObject, function(err, responseObject){
             return res.status(200).json(responseObject); 
           });
