@@ -1,0 +1,32 @@
+{
+	"_links": {
+		"self": { "href": "{{ path }}" },
+		{{#if parent}}"parent" : { "href" : "{{parent}}" },{{/if}}
+		{{#if children}}
+			{{#each children}}
+				"{{this}}" : { "href" : "{{../path}}/{{this}}" },
+			{{/each}}
+		{{/if}}
+		"curies": [{ "name": "speakers", "href": "http://example.com/docs/rels/speakers", "templated": false }]
+	},
+	{{#if collection}}
+	"_embedded" : {
+		"speakers" : [
+			{{#each speakers}}
+				{
+					"_links" : {
+						"self": { "href": "{{path}}{{id}}" }
+					},
+"name" : "{{name}}",
+"employer" : "{{employer}}",
+"id" : "{{id}}"
+				}{{#unless @last}},{{/unless}}
+			{{/each}}
+		]
+	}
+	{{else}}
+"name" : "{{speakers.name}}",
+"employer" : "{{speakers.employer}}",
+"id" : "{{speakers.id}}"
+	{{/if}}
+}
