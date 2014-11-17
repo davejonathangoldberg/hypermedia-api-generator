@@ -1,0 +1,5 @@
+{
+  "host"      : "localhost:27017/",
+  "database"  : "generated",
+  "safe"      : "true"
+}

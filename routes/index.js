@@ -212,24 +212,30 @@ module.exports = function Routes(app) {
     
   });
   
-  app.post('/inbound_hooks/:apiId/:webhookUrl', function(req, res, next){
+  app.post('/inbound_hooks/:apiId', function(req, res, next){
     /*
      * RECEIVES INBOUND HOOK
      * UPDATE STATUS IN DB TO ACTIVE
      * SEND OUTBOUND WEB HOOK TO REGISTERED WEB HOOK (REQUIRES DB LOOKUP OR PARAMS IN URL)
      * 
      */
-    console.log('req.params: ' + req.params['apiId']);
-    console.log('\nwebhookUrl: ' + req.params['webhookUrl']);
+    console.log('\nINBOUND_HOOKS req.params: ' + req.params['apiId']);
     console.log("\ninbound_hooks: " + JSON.stringify(req.body));
     var hookResponse;
     var apiObject = {};
     var updateData = {};
     var modifiedDate = new Date();
+    console.log(typeof req.body['url']);
+    if (typeof req.body['url'] == 'undefined' && typeof req.body['web_url'] == 'string'){
+      console.log(req.body['url']);
+      req.body['url'] = req.body['web_url'];
+    }
+    /*
     var parsedWebhookUrl = url.parse(req.params['webhookUrl']);
     console.log('parsedWebhookUrl.hostname: ' + parsedWebhookUrl.hostname);
     console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
     console.log('\nparsedWebhookUrl.path: ' + parsedWebhookUrl.path);
+    */
     updateData['queryKey'] = 'id';
     updateData['queryValue'] = req.params['apiId'];
     updateData['updateObject'] = { "status" : "active", "modifiedDate" : modifiedDate };
@@ -239,6 +245,10 @@ module.exports = function Routes(app) {
       } else {
         //res.status(200).json(data);
         console.log('data from update API: ' + JSON.stringify(data));
+        var parsedWebhookUrl = url.parse(data.instance.input.apiOptions.webhookUrl);
+        console.log('parsedWebhookUrl.hostname: ' + parsedWebhookUrl.hostname);
+        console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
+        console.log('\nparsedWebhookUrl.path: ' + parsedWebhookUrl.path);
         apiObject['apiId'] = req.params['apiId'];
         apiObject['apiName'] = data.instance.name;
         apiObject['status'] = data.instance.status;
