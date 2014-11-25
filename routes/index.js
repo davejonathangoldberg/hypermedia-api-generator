@@ -75,7 +75,7 @@ module.exports = function Routes(app) {
     data.apiOptions.basepath = req.body.basepath ? req.body.basepath : '/';
     data.apiOptions.mediaType = req.body.mediaType ? req.body.mediaType : 'application/json';
     data.apiOptions.apiName = req.body.apiName;
-    data.apiOptions.webhookUrl = req.body.webhookUrl ? req.body.webhookUrl : '';
+    data.apiOptions.webhookUrl = req.body.webhookUrl ? req.body.webhookUrl : 'http://www.modelship.io/inbound_hooks';
     
     // MAP API RESOURCES
     data.apiResources = req.body.resources ? { "resources" : req.body.resources } : null;
