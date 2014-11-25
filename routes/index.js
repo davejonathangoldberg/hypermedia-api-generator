@@ -144,6 +144,7 @@ module.exports = function Routes(app) {
           validation.replaceRequiredProperties(data, callback);
         },
         function(results, callback){ // SAVE IN DB
+          console.log("data to save: " + JSON.stringify(data))
           composer.saveApi(data, callback);
         },
         function(results, callback){ // TRANSFORM INPUT
