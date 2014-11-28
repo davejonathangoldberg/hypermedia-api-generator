@@ -240,7 +240,7 @@ module.exports = function Routes(app) {
       return res.status(400).json({"error" : "Your input data does not contain valid URLs."});
     } else if (typeof req.body['url'] == 'undefined' && typeof req.body['web_url'] == 'string') {
       // SHOULD VALIDATE URLS HERE AS WELL
-      console.log('req.body[url]: ' + req.body['url'] + ', req.body[web_url]: ' + req.body[web_url]:);
+      console.log('req.body[url]: ' + req.body['url'] + ', req.body[web_url]: ' + req.body[web_url]);
       req.body['url'] = req.body['web_url'];
     } else if (typeof req.body['url'] == 'string' && typeof req.body['web_url'] == 'undefined') {
       // SHOULD VALIDATE URLS HERE AS WELL
