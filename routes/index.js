@@ -178,8 +178,17 @@ module.exports = function Routes(app) {
           //callback();
           launchProject.herokuLaunch(transformedData, callback);
         },
-        function(transformedData, callback){ // WRITE SWAGGER
-          launchClient.constructSwagger(transformedData, callback);
+        function(transformedData, callback){ // WRITE UPDATE TO DB
+          var updateData = {};
+          var transformed = {};
+          transformed['resourcesArray'] = transformedData['resourcesArray'];
+          transformed['lineageArrays'] = transformedData['lineageArrays'];
+          transformed['modelsObject'] = transformedData['modelsObject'];
+          updateData['queryKey'] = 'id';
+          updateData['queryValue'] = transformedData['data']['apiId'];
+          updateData['updateObject'] = { "transformed" : transformed, "modifiedDate" : new Date() };
+          composer.updateApi(updateData, callback);
+          //launchClient.constructSwagger(transformedData, callback);
           //callback();
         }
       ],
@@ -333,7 +342,9 @@ module.exports = function Routes(app) {
      *        RETURN 200
      * 
      */
+    var productionHost;
     var data = {};
+    var inputData = { "data" : {}, "resourcesArray" : {} };
     data.queryKey = 'id';
     data.queryValue = req.params['apiId'];
     composer.retrieveApi(data, function(err, record){
@@ -344,13 +355,26 @@ module.exports = function Routes(app) {
           return res.send(500, 'Blast!');
         }
       } else {
-        console.log('typeOf record.instance.swagger: ' + typeof(record.instance.swagger));
-        console.log('value of record.instance.swagger: ' + JSON.stringify(record.instance.swagger));
-        if(typeof(record.instance.swagger) == 'undefined' || record.instance.swagger == ''){
+        if(typeof(record.instance) == 'undefined' || record.instance == ''){
+          return res.send(404, '');
+        } else if(typeof(record.instance.input) == 'undefined' || record.instance.input == ''){
           return res.send(404, '');
         } else {
-          return res.status(200).json(record.instance.swagger); 
+          console.log('value of record.instance.input: ' + JSON.stringify(record.instance.input));
+          inputData.data = record.instance.input;
+          inputData.resourcesArray = record.instance.transformed.resourcesArray;
+          productionHost = typeof(record.instance.productionUrl == 'string') ? url.parse(record.instance.productionUrl).host : 'TBD';
+          inputData.swaggerHost = productionHost;
+          launchClient.constructSwagger(inputData, function(err, swaggerObj){
+            if(err){
+              return res.status(500).json(err);
+            } else {
+              return res.status(200).json(swaggerObj);
+            }
+          });
         }
+        console.log('typeOf record.instance.swagger: ' + typeof(record.instance.swagger));
+        console.log('value of record.instance.swagger: ' + JSON.stringify(record.instance.swagger));
       }
     });
      
