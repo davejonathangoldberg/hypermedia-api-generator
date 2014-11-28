@@ -236,9 +236,18 @@ module.exports = function Routes(app) {
     var updateData = {};
     var modifiedDate = new Date();
     console.log(typeof req.body['url']);
-    if (typeof req.body['url'] == 'undefined' && typeof req.body['web_url'] == 'string'){
-      console.log(req.body['url']);
+    if (typeof req.body['url'] == 'undefined' && typeof req.body['web_url'] == 'undefined') {
+      return res.status(400).json({"error" : "Your input data does not contain valid URLs."});
+    } else if (typeof req.body['url'] == 'undefined' && typeof req.body['web_url'] == 'string') {
+      // SHOULD VALIDATE URLS HERE AS WELL
+      console.log('req.body[url]: ' + req.body['url'] + ', req.body[web_url]: ' + req.body[web_url]:);
       req.body['url'] = req.body['web_url'];
+    } else if (typeof req.body['url'] == 'string' && typeof req.body['web_url'] == 'undefined') {
+      // SHOULD VALIDATE URLS HERE AS WELL
+      console.log("Inbound Hook from Heroku");
+    } else {
+      console.log("Invalid Inbound Hook");
+      return res.status(400).json({"error" : "Your input data does not contain valid URLs."});
     }
     /*
     var parsedWebhookUrl = url.parse(req.params['webhookUrl']);
@@ -259,6 +268,8 @@ module.exports = function Routes(app) {
         console.log('parsedWebhookUrl.hostname: ' + parsedWebhookUrl.hostname);
         console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
         console.log('\nparsedWebhookUrl.path: ' + parsedWebhookUrl.path);
+        parsedWebhookUrl.port = parsedWebhookUrl.port || 80;
+        console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
         apiObject['apiId'] = req.params['apiId'];
         apiObject['apiName'] = data.instance.name;
         apiObject['status'] = data.instance.status;

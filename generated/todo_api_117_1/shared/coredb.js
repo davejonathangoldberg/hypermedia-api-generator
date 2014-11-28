@@ -2,11 +2,15 @@ module.exports = function Coredb(app) {
   
   // REQUIRED LIBRARIES
   var mongoose = require('mongoose');
+  var async = require('async');
+  var jjv = require('jjv');
   
   // RELATIVE REFERENCES 
-  var Models = require('./models');
+  var Models = require('../models');
+  var Utility = require('./utility.js');
   
   var models = new Models();
+  var utility = new Utility(app);
   
   /*
    *
@@ -20,13 +24,7 @@ module.exports = function Coredb(app) {
     data.model.find(data.query, data.options, function(err, resource) {
       if (err) {
         console.error(err);
-        var ms_err = {
-          "name" : "Database Query Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        callback(err, "");
       }
       data.collection = resource;
       console.log('findRecordsData: ' + JSON.stringify(data) + '\n');
@@ -40,22 +38,11 @@ module.exports = function Coredb(app) {
     data.model.findOne(data.query, data.options, function(err, resource) {
       if (err) {
         console.error(err);
-        var ms_err = {
-          "name" : "Database Query Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        callback(err, "");
       }
       if(!resource) {
-        var ms_err = {
-          "name" : "No Database Match",
-          "code" : 404,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        data.instance = resource;
+        callback(null, data);
       } else {
         data.instance = resource;
         callback(null, data);
@@ -65,17 +52,11 @@ module.exports = function Coredb(app) {
   
   // CREATE
   this.insertItem = function(data, callback){
-    var newInstance = new data.model(data); // INSTANTIATE NEW DB MODEL
+    var newInstance = new data.model(data.body); // INSTANTIATE NEW DB MODEL
     newInstance.save(function(err, newInstance) {  // SAVE TO DB
       if (err) {
         console.error(err);
-        var ms_err = {
-          "name" : "Database Insert Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        callback(err, '');
       }
       data.instance = newInstance;
       callback(null, data);
@@ -87,21 +68,13 @@ module.exports = function Coredb(app) {
     data.model.update(data.query, data.updateQuery, data.options, function(err, numberUpdated, updateInfo){
       if (err) {
         console.log('update err: ' + err);
-        console.log('data: ' + JSON.stringify(data));
-        var ms_err = {
-          "name" : "Database Update (U) Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");  
+        callback(err, "");  
       } else {
-        console.log('\n\nupdate data: ' + JSON.stringify(data) + '\n');
-        console.log('\n\nnumberUpdated' + numberUpdated + '\n');
-        console.log('\n\nupdateInfo: ' + JSON.stringify(updateInfo) + '\n');
+        console.log("data: " + JSON.stringify(data) + '\n');
+        console.log('numberUpdated' + numberUpdated + '\n');
+        console.log("updateInfo: " + JSON.stringify(updateInfo) + '\n');
         data.numberUpdated = numberUpdated;
         data.updateInfo = updateInfo;
-        console.log('update successful: ' + numberUpdated + ', ' + JSON.stringify(updateInfo));
         callback(null, data);
       }
     });
@@ -109,21 +82,15 @@ module.exports = function Coredb(app) {
   
   // FIND ONE AND UPDATE
   this.findAndUpdateRecords = function(data, callback){
-    //console.log('findandUpdateRecords Data: ' + JSON.stringify(data) + '\n');
+    console.log('findandUpdateRecords Data: ' + JSON.stringify(data) + '\n');
+    data.statusCode = data.statusCode || 200;
+    data.headerObject = data.headerObject || {};
     data.model.findOneAndUpdate(data.query, data.updateQuery, data.options, function(err, updatedRecord){
       if (err) {
-        console.log('find and update err: ' + err);
-        console.log('data: ' + JSON.stringify(data));
-        var ms_err = {
-          "name" : "Database Update Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        console.log('update err: ' + err);
+        callback(err, "");  
       } else {
         data.instance = updatedRecord;
-        //console.log('findAndUpdate Success Data: ' + JSON.stringify(data.instance));
         callback(null, data);
       }
     });
@@ -134,13 +101,7 @@ module.exports = function Coredb(app) {
     data.model.find({ "id" : data.instanceId }).remove(function(err, resource){
       if (err) {
         console.log('err: ' + err + '\n');
-        var ms_err = {
-          "name" : "Database Delete Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, "");
+        callback(err, '');   
       }
       if (resource === 0){
         data.deleted = false;
@@ -157,13 +118,7 @@ module.exports = function Coredb(app) {
     model.find({ "id" : instanceId }).remove(function(err, resource){
       if (err) {
         console.log('err: ' + err + '\n');
-        var ms_err = {
-          "name" : "Database Delete Error",
-          "code" : 500,
-          "type" : "Database",
-          "value" : err.message
-        };
-        callback(ms_err, ""); 
+        return returnServerError(res);   
       }
       if (resource === 0){
         return returnNotFound(res); // RETURNS 404 ERROR.
