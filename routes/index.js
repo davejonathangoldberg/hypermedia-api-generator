@@ -262,8 +262,6 @@ module.exports = function Routes(app) {
       if(err){
         res.status(500).json(err);
       } else {
-        //res.status(200).json(data);
-        console.log('data from update API: ' + JSON.stringify(data));
         var parsedWebhookUrl = url.parse(data.instance.input.apiOptions.webhookUrl);
         console.log('parsedWebhookUrl.hostname: ' + parsedWebhookUrl.hostname);
         console.log('\nparsedWebhookUrl.port: ' + parsedWebhookUrl.port);
